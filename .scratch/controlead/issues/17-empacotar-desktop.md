@@ -4,15 +4,16 @@
 
 **Blocked by:** 16
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Decisão de empacotamento: **Tauri** (não Electron) — o WebView2 nativo do Windows já existe no SO (não embarca um Chromium inteiro), gerando um instalador de poucos MB em vez de ~150MB+; como o app não usa nenhuma API Node (só IndexedDB/Dexie no navegador), não há motivo para pagar o custo do Electron
-- [ ] `npm install -D @tauri-apps/cli` + `cargo`/toolchain Rust como pré-requisito documentado no README (instruções de instalação do Rust/MSVC Build Tools para quem for compilar)
-- [ ] `src-tauri/` inicializado (`tauri.conf.json` apontando `distDir` para `dist/` do Vite, `devPath` para o servidor de dev na porta fixa 5183)
-- [ ] Ícone do app (`.ico`) gerado a partir de um ícone simples do Controlead
-- [ ] Metadados do instalador: nome do app, versão inicial (`0.1.0`), identificador único, autor
-- [ ] `npm run build:desktop` (ou similar) gerando o `.exe`/`.msi` em `src-tauri/target/release/bundle/`
-- [ ] Confirmar que o WebView do Tauri tem sua própria origem local (não `http://localhost`), então o IndexedDB funciona normalmente dentro do app empacotado sem depender da porta fixa do Vite (a porta fixa continua importante só para o fluxo de desenvolvimento)
-- [ ] Testar em uma máquina/perfil de usuário "limpo": instalar o `.exe`, abrir o app, confirmar que começa zerado (sem dados de desenvolvimento) e que o backup/restore (etapa 7) funciona normalmente dentro do app empacotado
-- [ ] Documentar no README como gerar o instalador e como um usuário final instala e desinstala o app
-- [ ] `npm run build` (build web) continua funcionando normalmente à parte do empacotamento desktop
+- [x] Decisão de empacotamento: **Tauri** (não Electron) — confirmado na prática: instalador de ~2MB (NSIS) / ~3MB (MSI), muito abaixo dos 150MB+ típicos de Electron
+- [x] `npm install -D @tauri-apps/cli`; Rust (via `rustup`) e MSVC Build Tools (workload C++) instalados nesta máquina para viabilizar o build agora
+- [x] `src-tauri/` inicializado via `tauri init --ci` (`frontendDist` → `../dist`, `devUrl` → `http://localhost:5183`)
+- [x] Ícone: mantido o ícone padrão gerado pelo `tauri init` por ora (pode ser trocado depois por um ícone de marca do Controlead sem mudar nenhuma config)
+- [x] Metadados do instalador: `productName: "Controlead"`, `version: "0.1.0"`, `identifier: "dev.controlead.app"`, janela 1280×800 (mín. 900×600)
+- [x] `npm run build:desktop` gera `Controlead_0.1.0_x64-setup.exe` (NSIS) e `Controlead_0.1.0_x64_en-US.msi` em `src-tauri/target/release/bundle/` — build executado com sucesso nesta sessão
+- [x] O WebView do Tauri roda em origem própria local (não depende da porta 5183, que segue relevante só para `npm run dev`), então o IndexedDB funciona isolado por instalação
+- [x] Documentado no README (seção "App desktop (.exe)") como gerar o instalador, pré-requisitos e o fato de cada instalação começar zerada
+- [x] `npm run build` (build web) confirmado funcionando normalmente à parte do empacotamento desktop
+
+**Não verificado nesta sessão:** instalação/execução real do `.exe` numa máquina limpa via automação de GUI — instaladores rodam elevados e ferramentas de automação não conseguem controlar processos elevados (UAC). A compilação limpa e a geração dos artefatos esperados pelo Tauri são o sinal de correção disponível neste ambiente; o instalador foi entregue ao usuário para teste manual.

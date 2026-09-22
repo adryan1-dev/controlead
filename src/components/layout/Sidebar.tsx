@@ -5,10 +5,10 @@ import {
   FolderKanban,
   Wallet,
   Settings,
-  Sparkles,
 } from 'lucide-react'
 import { NavLink } from 'react-router'
 
+import logoUrl from '@/assets/logo.svg'
 import { cn } from '@/lib/cn'
 
 import { ThemeToggle } from './ThemeToggle'
@@ -40,9 +40,7 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
   return (
     <aside className={cn('flex w-60 shrink-0 flex-col border-r border-[var(--color-border)] bg-[var(--color-surface)]', className)}>
       <div className="flex h-16 items-center gap-2 px-5">
-        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--color-accent)] text-[var(--color-accent-contrast)]">
-          <Sparkles size={15} strokeWidth={2.25} />
-        </div>
+        <img src={logoUrl} alt="" className="h-7 w-7 rounded-lg" />
         <span className="text-base font-semibold text-[var(--color-text-primary)]">
           Controlead
         </span>

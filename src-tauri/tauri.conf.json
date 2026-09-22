@@ -2,7 +2,7 @@
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Controlead",
   "version": "0.1.0",
-  "identifier": "dev.controlead.app",
+  "identifier": "dev.controlead.desktop",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:5183",

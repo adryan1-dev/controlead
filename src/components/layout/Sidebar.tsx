@@ -1,5 +1,6 @@
 import {
   LayoutDashboard,
+  MessageSquareText,
   Users,
   Briefcase,
   FolderKanban,
@@ -16,6 +17,7 @@ import { ThemeToggle } from './ThemeToggle'
 const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true, chip: 'blue' },
   { to: '/leads', label: 'Leads', icon: Users, end: false, chip: 'violet' },
+  { to: '/prospecting', label: 'Prospecção', icon: MessageSquareText, end: false, chip: 'teal' },
   { to: '/clients', label: 'Clientes', icon: Briefcase, end: false, chip: 'teal' },
   { to: '/projects', label: 'Projetos', icon: FolderKanban, end: false, chip: 'amber' },
   { to: '/finance', label: 'Financeiro', icon: Wallet, end: false, chip: 'rose' },

@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Controlead",
-  "version": "0.1.0",
+  "version": "1.0.1",
   "identifier": "dev.controlead.desktop",
   "build": {
     "frontendDist": "../dist",
@@ -13,6 +13,7 @@
     "windows": [
       {
         "title": "Controlead",
+        "create": false,
         "width": 1280,
         "height": 800,
         "minWidth": 900,

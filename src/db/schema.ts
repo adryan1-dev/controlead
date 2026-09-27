@@ -19,4 +19,12 @@ export const SCHEMA_V1 = {
   settings: 'id',
 } as const
 
-export const CURRENT_SCHEMA_VERSION = 1
+
+
+/** v2: biblioteca de scripts de prospecção e concorrência local por lead. */
+export const SCHEMA_V2 = {
+  ...SCHEMA_V1,
+  scripts: 'id, kind, stage',
+  competitors: 'id, leadId',
+} as const
+export const CURRENT_SCHEMA_VERSION = 2

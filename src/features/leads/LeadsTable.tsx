@@ -7,7 +7,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { IconButton } from '@/components/ui/IconButton'
 import { Select } from '@/components/ui/Select'
 import { Table, type TableColumn } from '@/components/ui/Table'
-import { LEAD_PIPELINE_ORDER, LEAD_STATUS_LABELS } from '@/domain/constants'
+import { LEAD_PIPELINE_ORDER, LEAD_PRIORITY_COLOR, LEAD_PRIORITY_LABELS, LEAD_STATUS_LABELS } from '@/domain/constants'
 import type { LeadStatus } from '@/domain/constants'
 import { formatDate } from '@/domain/dates'
 import type { Lead } from '@/domain/types'
@@ -52,6 +52,12 @@ export function LeadsTable({ leads, onRowClick, onArchive, onCreateClick }: Lead
           </Select>
         </div>
       ),
+    },
+    {
+      key: 'priority',
+      header: 'Prioridade',
+      render: (lead) =>
+        lead.priority ? <Badge tone={LEAD_PRIORITY_COLOR[lead.priority]}>{LEAD_PRIORITY_LABELS[lead.priority]}</Badge> : '—',
     },
     { key: 'niche', header: 'Nicho', render: (lead) => lead.niche ?? '—' },
     { key: 'source', header: 'Origem', render: (lead) => lead.source ?? '—' },

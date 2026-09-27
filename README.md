@@ -10,6 +10,7 @@ Centraliza o fluxo **Lead → abordagem → follow-up → fechamento → produç
 
 ## Índice
 
+- [Novidades da 1.0.1](#novidades-da-101)
 - [Por que existe](#por-que-existe)
 - [Funcionalidades](#funcionalidades)
 - [Screenshots](#screenshots)
@@ -24,6 +25,28 @@ Centraliza o fluxo **Lead → abordagem → follow-up → fechamento → produç
 - [Roadmap](#roadmap)
 
 ---
+
+## Novidades da 1.0.1
+
+**Prospecção com mensagens prontas.** A planilha de prospecção agora vive dentro do app:
+
+- **Nova página Prospecção**, com quatro abas:
+  - **Scripts por etapa**: mensagens para cada fase do funil, de "A chamar" a "Perdido".
+  - **Objeções**: respostas prontas, com busca.
+  - **Concorrência**: todos os concorrentes locais, ligados aos leads.
+  - **Resumo**: totais por prioridade, cidade e estado, média e máximo de avaliações.
+- **Variáveis nos scripts**: `{tratamento}`, `{avaliacoes}`, `{nota}`, `{cidade}`, `{especialidade}`, `{gancho}`, `{concorrente}` e outras são trocadas pelos dados de cada lead. Variável sem dado aparece destacada como `[avaliacoes]`, para nada sair com buraco.
+- **Aba Abordagem no lead**:
+  - mostra as mensagens da etapa atual já preenchidas;
+  - botões **Copiar**, **WhatsApp** (abre a conversa com o texto escrito) e **Direct** (copia e abre o Direct do Instagram), que já registram o contato no histórico;
+  - objeções renderizadas para o lead e cadastro dos concorrentes dele.
+- **Campos de pesquisa no lead**: especialidade, UF, prioridade, nota no Google, nº de avaliações, seguidores e gancho. A lista de leads ganhou filtro e badge de prioridade.
+- **Modelos iniciais incluídos**: 19 scripts e 8 objeções para venda de sites. Tudo editável, reordenável e restaurável em "Restaurar modelos".
+- **Adicionar leads em lote** (Configurações → Adicionar leads): importa um `.json` de leads **sem apagar nada**. Lead que já existe (mesmo Instagram ou WhatsApp) não é duplicado; só ganha os campos que estavam vazios e os concorrentes novos.
+
+**Atualizando da 0.1.0:** é só instalar por cima. O banco é migrado sozinho para o schema v2 (os modelos de script entram e nada do que você já tinha é tocado). Como o identificador do app mudou (`dev.controlead.app` → `dev.controlead.desktop`), na primeira abertura a 1.0.1 copia os seus dados da pasta antiga para a nova; a pasta antiga fica intacta como cópia de segurança. Mesmo assim, exporte um backup antes de atualizar.
+
+Backups da 0.1.0 continuam importando normalmente: eles são migrados para o formato novo na importação.
 
 ## Por que existe
 
@@ -41,6 +64,12 @@ Quem presta serviço sozinho (freelancer, pequena agência, prestador autônomo)
 - **Duas visões**: tabela (com edição de status inline) e **Kanban** com drag-and-drop nativo.
 - Aviso automático de possível lead duplicado (mesmo Instagram/WhatsApp).
 - Atalhos de um clique para abrir WhatsApp, Instagram e site.
+
+### 💬 Prospecção
+- Biblioteca de **scripts por etapa do funil** e de **respostas a objeções**, com variáveis preenchidas pelos dados de cada lead.
+- Aba **Abordagem** no lead: mensagem pronta para copiar ou enviar pelo WhatsApp/Direct, registrando o contato.
+- **Concorrência local** por lead (quem já tem site vira argumento) e **resumo da prospecção** por prioridade, cidade e estado.
+- Campos de pesquisa (especialidade, UF, prioridade, nota, avaliações, seguidores, gancho) e importação de leads em lote sem apagar nada.
 
 ### 🕒 Próxima ação e follow-up
 - Cada lead tem uma "próxima ação" (fazer abordagem, follow-up, enviar prévia/proposta, cobrar resposta...) com data.
@@ -107,13 +136,14 @@ Quem presta serviço sozinho (freelancer, pequena agência, prestador autônomo)
 ## Como usar
 
 1. **Cadastre um lead** em Leads → "Novo lead" (só o nome é obrigatório).
-2. **Mova o pipeline**: mude o status pela tabela, pelo Drawer (clique no lead) ou arrastando o card no Kanban. Alguns status sugerem um follow-up automaticamente.
-3. **Registre contatos e notas** no Drawer do lead, na aba Histórico.
-4. **Feche o negócio** quando o lead topar: botão "Fechar negócio" no Drawer, ou solte o card na coluna "Fechado" do Kanban.
-5. **Acompanhe o projeto** em Projetos: mude o status de produção, adicione itens (extras, cortesias, descontos) e registre pagamentos conforme chegam.
-6. **Veja tudo agregado** por cliente em Clientes e por mês em Financeiro.
-7. **Comece cada dia pelo Dashboard**: ele já mostra o que está atrasado, o que vence hoje e o que precisa de atenção.
-8. **Exporte um backup** de vez em quando em Configurações — é a única cópia dos seus dados.
+2. **Aborde com o script certo**: no Drawer do lead, a aba Abordagem traz as mensagens da etapa atual já preenchidas. Ajuste os modelos e as objeções em Prospecção.
+3. **Mova o pipeline**: mude o status pela tabela, pelo Drawer (clique no lead) ou arrastando o card no Kanban. Alguns status sugerem um follow-up automaticamente.
+4. **Registre contatos e notas** no Drawer do lead, na aba Histórico.
+5. **Feche o negócio** quando o lead topar: botão "Fechar negócio" no Drawer, ou solte o card na coluna "Fechado" do Kanban.
+6. **Acompanhe o projeto** em Projetos: mude o status de produção, adicione itens (extras, cortesias, descontos) e registre pagamentos conforme chegam.
+7. **Veja tudo agregado** por cliente em Clientes e por mês em Financeiro.
+8. **Comece cada dia pelo Dashboard**: ele já mostra o que está atrasado, o que vence hoje e o que precisa de atenção.
+9. **Exporte um backup** de vez em quando em Configurações — é a única cópia dos seus dados.
 
 ## Rodando o projeto localmente
 
@@ -155,13 +185,14 @@ Pré-requisitos (só para *gerar* o instalador — quem só vai *usar* o app ins
 - [Rust](https://www.rust-lang.org/tools/install) (via `rustup`)
 - No Windows: [Microsoft C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) (workload "Desenvolvimento para desktop com C++")
 
-O instalador gerado (`.exe`/`.msi` em `src-tauri/target/release/bundle/`) instala uma versão **zerada** — cada instalação tem seu próprio armazenamento local, sem nenhum dado compartilhado entre máquinas diferentes.
+Os instaladores prontos estão nas [Releases](https://github.com/adryan1-dev/controlead/releases). O instalador gerado (`.exe`/`.msi` em `src-tauri/target/release/bundle/`) instala uma versão **zerada** — cada instalação tem seu próprio armazenamento local, sem nenhum dado compartilhado entre máquinas diferentes.
 
 ## Backup e restauração
 
 Como não existe servidor nem conta na nuvem, **o backup é a sua rede de segurança**. Em Configurações:
 
-- **Exportar backup**: baixa um arquivo `controlead-backup-AAAA-MM-DD-HHmm.json` com todos os dados (leads, tarefas, histórico, projetos, itens, pagamentos e configurações).
+- **Exportar backup**: baixa um arquivo `controlead-backup-AAAA-MM-DD-HHmm.json` com todos os dados (leads, tarefas, histórico, projetos, itens, pagamentos, configurações, scripts e concorrentes).
+- **Adicionar leads**: importa um arquivo de leads (`{ "app": "controlead", "kind": "leads", "leads": [...] }`) somando aos que já existem, sem substituir nada.
 - **Importar backup**: seleciona um arquivo exportado anteriormente. O app valida o arquivo (formato, versão de schema, integridade entre as tabelas) antes de qualquer alteração, mostra quantos registros existem hoje vs. no arquivo, e só substitui os dados atuais depois de você digitar "SUBSTITUIR" para confirmar. Um backup do estado atual é baixado automaticamente antes da substituição — uma importação nunca é uma via de mão única.
 
 O Dashboard avisa quando faz muito tempo desde o último backup (prazo configurável em Configurações → Automações).
@@ -186,12 +217,13 @@ src/
   domain/     Lógica pura: tipos, constantes, cálculos financeiros, regras de automação,
               validação (zod), migrações de schema — sem depender de UI nem de banco
   services/   Única camada que escreve no banco (leadService, projectService, dealService,
-              taskService, paymentService, backupService, settingsService); cada escrita
+              taskService, paymentService, backupService, settingsService, scriptService,
+              competitorService); cada escrita
               relevante já grava o evento correspondente no histórico
   hooks/      Hooks React (useLiveQuery) que leem do Dexie de forma reativa
   components/ UI reutilizável (ui/ = genéricos; shared/ = específicos do domínio; layout/)
   features/   Páginas e componentes de cada área (leads, projects, clients, finance,
-              dashboard, deals, tasks, settings)
+              dashboard, deals, tasks, settings, prospecting)
 src-tauri/    Configuração do empacotamento desktop (Tauri)
 ```
 
@@ -200,6 +232,7 @@ src-tauri/    Configuração do empacotamento desktop (Tauri)
 - **Lead** é a única entidade de "pessoa/empresa" — não existe tabela de Cliente. Um lead vira "cliente" automaticamente quando ganha o primeiro **Project** (`/clients` é uma visão derivada, não uma tabela própria).
 - **Project** guarda status, prazos e URLs. O preço não é um campo solto: é a soma dos **ProjectItem** (`contratado` + `adicional` − `desconto`; `cortesia` não entra no total).
 - **Payment** são os pagamentos individuais; recebido/saldo/status financeiro são sempre calculados a partir deles (`domain/finance.ts`), nunca armazenados.
+- **Script** é uma mensagem da biblioteca de prospecção (por etapa do funil ou resposta a objeção), com variáveis resolvidas em `domain/scripts.ts`. **Competitor** é um concorrente local ligado a um lead.
 - **Task** é a "próxima ação" de um lead (ou de um projeto). **Event** é o histórico append-only, alimentado automaticamente pelos serviços a cada mudança relevante.
 
 ## Como contribuir
@@ -221,7 +254,6 @@ Issues e sugestões também são bem-vindas, mesmo sem código — principalment
 
 Ideias registradas para o futuro, propositalmente **não implementadas ainda** para não inchar o escopo:
 
-- Templates de mensagem de abordagem/follow-up com botão de copiar.
 - Métricas de conversão (taxa de resposta, taxa de fechamento, por origem/nicho, tempo médio lead→cliente).
 - PWA e notificações locais para tarefas do dia.
 - Importação de backup com mesclagem (hoje é só substituição total).

@@ -12,7 +12,7 @@ export const BACKUP_FORMAT = 1
 
 export class BackupValidationError extends Error {}
 
-const TABLE_KEYS = ['leads', 'tasks', 'events', 'projects', 'projectItems', 'payments', 'settings'] as const
+const TABLE_KEYS = ['leads', 'tasks', 'events', 'projects', 'projectItems', 'payments', 'settings', 'scripts', 'competitors'] as const
 type TableKey = (typeof TABLE_KEYS)[number]
 
 /** Lê todas as tabelas em uma única transação de leitura e monta o envelope de backup. */
@@ -20,7 +20,7 @@ export async function buildBackup(database: ControleadDB = defaultDb): Promise<B
   const tables = database.tables.filter((t) => (TABLE_KEYS as readonly string[]).includes(t.name))
 
   return database.transaction('r', tables, async () => {
-    const [leads, tasks, events, projects, projectItems, payments, settings] = await Promise.all([
+    const [leads, tasks, events, projects, projectItems, payments, settings, scripts, competitors] = await Promise.all([
       database.leads.toArray(),
       database.tasks.toArray(),
       database.events.toArray(),
@@ -28,9 +28,11 @@ export async function buildBackup(database: ControleadDB = defaultDb): Promise<B
       database.projectItems.toArray(),
       database.payments.toArray(),
       database.settings.toArray(),
+      database.scripts.toArray(),
+      database.competitors.toArray(),
     ])
 
-    const data: BackupData = { leads, tasks, events, projects, projectItems, payments, settings }
+    const data: BackupData = { leads, tasks, events, projects, projectItems, payments, settings, scripts, competitors }
 
     return {
       app: BACKUP_APP_ID,
@@ -157,6 +159,11 @@ function checkReferentialIntegrity(data: BackupData): void {
       throw new BackupValidationError(`Backup inválido: tarefa "${task.id}" referencia um projeto inexistente.`)
     }
   }
+  for (const competitor of data.competitors) {
+    if (!leadIds.has(competitor.leadId)) {
+      throw new BackupValidationError(`Backup inválido: concorrente "${competitor.id}" referencia um lead inexistente.`)
+    }
+  }
   for (const event of data.events) {
     if (!leadIds.has(event.leadId)) {
       throw new BackupValidationError(`Backup inválido: evento "${event.id}" referencia um lead inexistente.`)
@@ -169,7 +176,7 @@ function checkReferentialIntegrity(data: BackupData): void {
 
 /** Contagens atuais do banco, para comparar com as do backup antes de confirmar a importação. */
 export async function getCurrentCounts(database: ControleadDB = defaultDb): Promise<Record<TableKey, number>> {
-  const [leads, tasks, events, projects, projectItems, payments, settings] = await Promise.all([
+  const [leads, tasks, events, projects, projectItems, payments, settings, scripts, competitors] = await Promise.all([
     database.leads.count(),
     database.tasks.count(),
     database.events.count(),
@@ -177,8 +184,10 @@ export async function getCurrentCounts(database: ControleadDB = defaultDb): Prom
     database.projectItems.count(),
     database.payments.count(),
     database.settings.count(),
+    database.scripts.count(),
+    database.competitors.count(),
   ])
-  return { leads, tasks, events, projects, projectItems, payments, settings }
+  return { leads, tasks, events, projects, projectItems, payments, settings, scripts, competitors }
 }
 
 /**
@@ -188,8 +197,12 @@ export async function getCurrentCounts(database: ControleadDB = defaultDb): Prom
  * transação: se algo falhar no meio, o Dexie desfaz tudo sozinho.
  */
 export async function importBackup(backup: BackupFile, database: ControleadDB = defaultDb): Promise<void> {
-  const currentCounts = await getCurrentCounts(database)
-  const hasExistingData = Object.values(currentCounts).some((count) => count > 0)
+  const { scripts: _scripts, ...currentCounts } = await getCurrentCounts(database)
+  // Os modelos de script semeados não são "dados seus"; só contam se você criou ou editou algum.
+  const hasCustomScripts = (await database.scripts.toArray()).some(
+    (s) => !s.id.startsWith('default-') || s.updatedAt !== s.createdAt,
+  )
+  const hasExistingData = hasCustomScripts || Object.values(currentCounts).some((count) => count > 0)
   if (hasExistingData) {
     await exportBackup(database)
   }
@@ -209,6 +222,8 @@ export async function importBackup(backup: BackupFile, database: ControleadDB = 
       database.projectItems.bulkAdd(backup.data.projectItems),
       database.payments.bulkAdd(backup.data.payments),
       database.settings.bulkAdd(settingsRows),
+      database.scripts.bulkAdd(backup.data.scripts),
+      database.competitors.bulkAdd(backup.data.competitors),
     ])
   })
 }

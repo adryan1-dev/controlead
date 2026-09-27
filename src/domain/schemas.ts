@@ -2,10 +2,12 @@ import { z } from 'zod'
 
 import {
   EVENT_TYPES,
+  LEAD_PRIORITIES,
   LEAD_STATUSES,
   PAYMENT_METHODS,
   PROJECT_ITEM_TYPES,
   PROJECT_STATUSES,
+  SCRIPT_KINDS,
   TASK_STATUSES,
   TASK_TYPES,
 } from './constants'
@@ -26,6 +28,13 @@ export const leadFormSchema = z.object({
   tags: z.array(z.string().trim().min(1)).default([]),
   estimatedValueCents: z.number().int().nonnegative().optional(),
   notes: z.string().trim().optional(),
+  specialty: z.string().trim().optional(),
+  state: z.string().trim().toUpperCase().max(2, 'Use a sigla (ex.: MG)').optional(),
+  priority: z.enum(LEAD_PRIORITIES).optional(),
+  googleRating: z.number().min(0).max(5, 'A nota vai de 0 a 5').optional(),
+  googleReviews: z.number().int('Use um número inteiro').nonnegative().optional(),
+  followers: z.number().int('Use um número inteiro').nonnegative().optional(),
+  hook: z.string().trim().optional(),
 })
 
 export type LeadFormInput = z.infer<typeof leadFormSchema>
@@ -108,6 +117,13 @@ const leadRecordSchema = z.object({
   lastInteractionAt: z.string().optional(),
   firstClosedAt: z.string().optional(),
   archivedAt: z.string().optional(),
+  specialty: z.string().optional(),
+  state: z.string().optional(),
+  priority: z.enum(LEAD_PRIORITIES).optional(),
+  googleRating: z.number().optional(),
+  googleReviews: z.number().optional(),
+  followers: z.number().optional(),
+  hook: z.string().optional(),
 })
 
 const taskRecordSchema = z.object({
@@ -180,6 +196,27 @@ const settingsRecordSchema = z.object({
   lastBackupAt: z.string().optional(),
 })
 
+const scriptRecordSchema = z.object({
+  id: z.string().min(1),
+  kind: z.enum(SCRIPT_KINDS),
+  stage: z.enum(LEAD_STATUSES).optional(),
+  title: z.string(),
+  body: z.string(),
+  order: z.number(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+})
+
+const competitorRecordSchema = z.object({
+  id: z.string().min(1),
+  leadId: z.string().min(1),
+  name: z.string(),
+  website: z.string().optional(),
+  offers: z.string().optional(),
+  opportunity: z.string().optional(),
+  createdAt: z.string(),
+})
+
 export const backupDataSchema = z.object({
   leads: z.array(leadRecordSchema),
   tasks: z.array(taskRecordSchema),
@@ -188,6 +225,8 @@ export const backupDataSchema = z.object({
   projectItems: z.array(projectItemRecordSchema),
   payments: z.array(paymentRecordSchema),
   settings: z.array(settingsRecordSchema),
+  scripts: z.array(scriptRecordSchema),
+  competitors: z.array(competitorRecordSchema),
 })
 
 export type BackupData = z.infer<typeof backupDataSchema>

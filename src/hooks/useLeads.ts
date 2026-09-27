@@ -1,12 +1,13 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 
 import { db } from '@/db/db'
-import type { LeadStatus } from '@/domain/constants'
+import type { LeadPriority, LeadStatus } from '@/domain/constants'
 import { matchesAny } from '@/domain/search'
 import type { Lead } from '@/domain/types'
 
 export interface LeadListFilters {
   status?: LeadStatus
+  priority?: LeadPriority
   niche?: string
   source?: string
   tag?: string
@@ -18,22 +19,23 @@ export interface LeadListFilters {
 }
 
 export function useLeads(filters: LeadListFilters = {}): Lead[] | undefined {
-  const { status, niche, source, tag, search, createdFrom, createdTo, includeArchived } = filters
+  const { status, priority, niche, source, tag, search, createdFrom, createdTo, includeArchived } = filters
 
   return useLiveQuery(async () => {
     let leads = await db.leads.toArray()
     if (!includeArchived) leads = leads.filter((l) => !l.archivedAt)
     if (status) leads = leads.filter((l) => l.status === status)
+    if (priority) leads = leads.filter((l) => l.priority === priority)
     if (niche) leads = leads.filter((l) => l.niche === niche)
     if (source) leads = leads.filter((l) => l.source === source)
     if (tag) leads = leads.filter((l) => l.tags.includes(tag))
     if (createdFrom) leads = leads.filter((l) => l.createdAt.slice(0, 10) >= createdFrom)
     if (createdTo) leads = leads.filter((l) => l.createdAt.slice(0, 10) <= createdTo)
     if (search) {
-      leads = leads.filter((l) => matchesAny([l.name, l.company, l.instagram, l.whatsapp, l.city, l.niche], search))
+      leads = leads.filter((l) => matchesAny([l.name, l.company, l.instagram, l.whatsapp, l.city, l.niche, l.specialty], search))
     }
     return leads.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
-  }, [status, niche, source, tag, search, createdFrom, createdTo, includeArchived])
+  }, [status, priority, niche, source, tag, search, createdFrom, createdTo, includeArchived])
 }
 
 /** Valores de nicho/origem já usados em algum lead, para sugestão nos formulários. */

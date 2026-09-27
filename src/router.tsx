@@ -7,6 +7,7 @@ import { FinancePage } from '@/features/finance/FinancePage'
 import { LeadsPage } from '@/features/leads/LeadsPage'
 import { ProjectDetailPage } from '@/features/projects/ProjectDetailPage'
 import { ProjectsPage } from '@/features/projects/ProjectsPage'
+import { ProspectingPage } from '@/features/prospecting/ProspectingPage'
 import { SettingsPage } from '@/features/settings/SettingsPage'
 
 const devRoutes = import.meta.env.DEV
@@ -29,6 +30,7 @@ export const router = createBrowserRouter([
       { index: true, element: <DashboardPage /> },
       { path: 'leads', element: <LeadsPage /> },
       { path: 'leads/:id', element: <LeadsPage /> },
+      { path: 'prospecting', element: <ProspectingPage /> },
       { path: 'clients', element: <ClientsPage /> },
       { path: 'projects', element: <ProjectsPage /> },
       { path: 'projects/:id', element: <ProjectDetailPage /> },

@@ -1,7 +1,9 @@
 import type { ControleadDB } from '@/db/db'
 import { db as defaultDb } from '@/db/db'
-import type { ContactChannel, LeadStatus } from '@/domain/constants'
+import type { ContactChannel, LeadPriority, LeadStatus } from '@/domain/constants'
 import type { IsoTimestamp, Lead } from '@/domain/types'
+
+import { addCompetitor, type CompetitorInput } from './competitorService'
 
 export interface CreateLeadInput {
   name: string
@@ -16,6 +18,13 @@ export interface CreateLeadInput {
   estimatedValueCents?: number
   notes?: string
   status?: LeadStatus
+  specialty?: string
+  state?: string
+  priority?: LeadPriority
+  googleRating?: number
+  googleReviews?: number
+  followers?: number
+  hook?: string
 }
 
 export type UpdateLeadInput = Partial<Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>>
@@ -37,6 +46,13 @@ export async function createLead(input: CreateLeadInput, database: ControleadDB 
     estimatedValueCents: input.estimatedValueCents,
     notes: input.notes,
     status: input.status ?? 'to_contact',
+    specialty: input.specialty,
+    state: input.state,
+    priority: input.priority,
+    googleRating: input.googleRating,
+    googleReviews: input.googleReviews,
+    followers: input.followers,
+    hook: input.hook,
     createdAt: now,
     updatedAt: now,
   }
@@ -151,7 +167,7 @@ export async function unarchiveLead(id: string, database: ControleadDB = default
 }
 
 /**
- * Exclui o lead permanentemente, junto com suas tarefas e eventos.
+ * Exclui o lead permanentemente, junto com suas tarefas, eventos e concorrentes.
  * Bloqueado se o lead já tiver projetos (nesse caso, o chamador deve
  * oferecer arquivar em vez de excluir).
  */
@@ -161,10 +177,11 @@ export async function deleteLead(id: string, database: ControleadDB = defaultDb)
     throw new Error('Não é possível excluir um lead que já possui projetos. Arquive-o em vez disso.')
   }
 
-  await database.transaction('rw', database.leads, database.tasks, database.events, async () => {
+  await database.transaction('rw', [database.leads, database.tasks, database.events, database.competitors], async () => {
     await database.leads.delete(id)
     await database.tasks.where('leadId').equals(id).delete()
     await database.events.where('leadId').equals(id).delete()
+    await database.competitors.where('leadId').equals(id).delete()
   })
 }
 
@@ -186,4 +203,53 @@ export async function findPotentialDuplicates(
   const unique = new Map(matches.map((lead) => [lead.id, lead]))
   if (excludeId) unique.delete(excludeId)
   return [...unique.values()]
+}
+
+export interface ImportLeadInput extends CreateLeadInput {
+  competitors?: CompetitorInput[]
+}
+
+export interface ImportLeadsResult {
+  created: number
+  updated: number
+}
+
+/** Campos que a importação preenche num lead que já existe, só se estiverem vazios. */
+const ENRICHABLE_FIELDS = ['company', 'website', 'specialty', 'state', 'priority', 'googleRating', 'googleReviews', 'followers', 'hook'] as const
+
+/**
+ * Adiciona leads em lote sem apagar nada. Lead que já existe (mesmo
+ * Instagram ou WhatsApp) não é duplicado: só ganha os campos de pesquisa
+ * que ainda estão vazios e os concorrentes que ainda não tem (pelo nome).
+ */
+export async function importLeads(inputs: ImportLeadInput[], database: ControleadDB = defaultDb): Promise<ImportLeadsResult> {
+  let created = 0
+  let updated = 0
+  for (const { competitors = [], ...input } of inputs) {
+    const [existing] = await findPotentialDuplicates(input, undefined, database)
+    let leadId: string
+    if (existing) {
+      const patch: UpdateLeadInput = {}
+      for (const field of ENRICHABLE_FIELDS) {
+        if (existing[field] === undefined && input[field] !== undefined) Object.assign(patch, { [field]: input[field] })
+      }
+      if (Object.keys(patch).length > 0) await updateLead(existing.id, patch, database)
+      leadId = existing.id
+      updated++
+    } else {
+      leadId = (await createLead(input, database)).id
+      created++
+    }
+
+    const known = new Set((await database.competitors.where('leadId').equals(leadId).toArray()).map((c) => c.name.toLowerCase()))
+    // Timestamps crescentes preservam a ordem do arquivo: o primeiro concorrente é o que `{concorrente}` usa.
+    const base = Date.now()
+    for (const [index, competitor] of competitors.entries()) {
+      const name = competitor.name.trim()
+      if (!name || known.has(name.toLowerCase())) continue
+      await addCompetitor(leadId, { ...competitor, name }, database, new Date(base + index).toISOString())
+      known.add(name.toLowerCase())
+    }
+  }
+  return { created, updated }
 }

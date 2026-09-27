@@ -4,11 +4,12 @@ import { Combobox } from '@/components/ui/Combobox'
 import { DateInput } from '@/components/ui/DateInput'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
-import { LEAD_PIPELINE_ORDER, LEAD_STATUS_LABELS } from '@/domain/constants'
+import { LEAD_PIPELINE_ORDER, LEAD_PRIORITIES, LEAD_PRIORITY_LABELS, LEAD_STATUS_LABELS } from '@/domain/constants'
 import { useLeadFieldSuggestions } from '@/hooks/useLeads'
 
 export interface LeadFiltersValue {
   status: string
+  priority: string
   niche: string
   source: string
   search: string
@@ -50,6 +51,14 @@ export function LeadFilters({ value, onChange }: LeadFiltersProps) {
         ))}
         <option value="not_interested">{LEAD_STATUS_LABELS.not_interested}</option>
         <option value="lost">{LEAD_STATUS_LABELS.lost}</option>
+      </Select>
+      <Select className="w-36" value={value.priority} onChange={(e) => onChange({ priority: e.target.value })}>
+        <option value="">Toda prioridade</option>
+        {LEAD_PRIORITIES.map((p) => (
+          <option key={p} value={p}>
+            Prioridade {LEAD_PRIORITY_LABELS[p].toLowerCase()}
+          </option>
+        ))}
       </Select>
       <div className="w-40">
         <Combobox value={value.niche} onChange={(v) => onChange({ niche: v })} options={niches} placeholder="Nicho" />

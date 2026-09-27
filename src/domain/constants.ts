@@ -252,3 +252,28 @@ export const CONTACT_CHANNEL_LABELS: Record<ContactChannel, string> = {
   in_person: 'Presencial',
   other: 'Outro',
 }
+
+// ---------------------------------------------------------------------------
+// Prospecção
+// ---------------------------------------------------------------------------
+
+export const LEAD_PRIORITIES = ['high', 'medium', 'low'] as const
+
+export type LeadPriority = (typeof LEAD_PRIORITIES)[number]
+
+export const LEAD_PRIORITY_LABELS: Record<LeadPriority, string> = {
+  high: 'Alta',
+  medium: 'Média',
+  low: 'Baixa',
+}
+
+export const LEAD_PRIORITY_COLOR: Record<LeadPriority, 'danger' | 'warning' | 'neutral'> = {
+  high: 'danger',
+  medium: 'warning',
+  low: 'neutral',
+}
+
+/** `stage`: mensagem para uma etapa do funil. `objection`: resposta pronta para uma objeção. */
+export const SCRIPT_KINDS = ['stage', 'objection'] as const
+
+export type ScriptKind = (typeof SCRIPT_KINDS)[number]

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router'
 import { Badge } from '@/components/ui/Badge'
 import { IconButton } from '@/components/ui/IconButton'
 import { Menu } from '@/components/ui/Menu'
-import { LEAD_STATUS_LABELS, TASK_TYPE_LABELS, type LeadStatus } from '@/domain/constants'
+import { LEAD_PRIORITY_COLOR, LEAD_PRIORITY_LABELS, LEAD_STATUS_LABELS, TASK_TYPE_LABELS, type LeadStatus } from '@/domain/constants'
 import { formatDate, today } from '@/domain/dates'
 import { isFollowUpPending, nextOpenTask } from '@/domain/rules'
 import type { Lead, Task } from '@/domain/types'
@@ -43,8 +43,9 @@ export function LeadCard({ lead, openTasks, moveTargets, onMove }: LeadCardProps
           />
         </div>
       </div>
-      {followUpPending || next ? (
+      {followUpPending || next || lead.priority ? (
         <div className="mt-1.5 flex flex-wrap items-center gap-1">
+          {lead.priority ? <Badge tone={LEAD_PRIORITY_COLOR[lead.priority]}>{LEAD_PRIORITY_LABELS[lead.priority]}</Badge> : null}
           {followUpPending ? <Badge tone="warning">Follow-up pendente</Badge> : null}
           {next ? (
             <span className="text-xs text-[var(--color-text-muted)]">

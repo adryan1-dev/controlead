@@ -7,7 +7,7 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/Button'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { useToast } from '@/components/ui/Toast'
-import type { LeadStatus } from '@/domain/constants'
+import type { LeadPriority, LeadStatus } from '@/domain/constants'
 import { today } from '@/domain/dates'
 import { isFollowUpPending, isStale } from '@/domain/rules'
 import type { Lead } from '@/domain/types'
@@ -28,6 +28,7 @@ import { LeadsTable } from './LeadsTable'
 
 const DEFAULT_FILTERS: LeadFiltersValue = {
   status: '',
+  priority: '',
   niche: '',
   source: '',
   search: '',
@@ -47,6 +48,7 @@ export function LeadsPage() {
   const [filters, setFilters] = useUrlFilters(DEFAULT_FILTERS)
   const leadsRaw = useLeads({
     status: (filters.status || undefined) as LeadStatus | undefined,
+    priority: (filters.priority || undefined) as LeadPriority | undefined,
     niche: filters.niche || undefined,
     source: filters.source || undefined,
     search: filters.search || undefined,

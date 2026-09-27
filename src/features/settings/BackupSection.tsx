@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 
-import { Download, Upload } from 'lucide-react'
+import { Download, UserPlus, Upload } from 'lucide-react'
 
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -8,6 +8,7 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { useToast } from '@/components/ui/Toast'
 import { formatDate } from '@/domain/dates'
 import type { BackupFile } from '@/domain/schemas'
+import { importLeads, type ImportLeadInput } from '@/services/leadService'
 import { BackupValidationError, exportBackup, getCurrentCounts, importBackup, validateBackupFile } from '@/services/backupService'
 
 const TABLE_LABELS: Record<string, string> = {
@@ -18,6 +19,8 @@ const TABLE_LABELS: Record<string, string> = {
   projectItems: 'Itens de projeto',
   payments: 'Pagamentos',
   settings: 'Configurações',
+  scripts: 'Scripts',
+  competitors: 'Concorrentes',
 }
 
 type Counts = Record<string, number>
@@ -26,6 +29,7 @@ export function BackupSection() {
   const { showToast } = useToast()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  const leadsInputRef = useRef<HTMLInputElement>(null)
   const [exporting, setExporting] = useState(false)
   const [importError, setImportError] = useState<string | undefined>(undefined)
   const [pending, setPending] = useState<{ backup: BackupFile; currentCounts: Counts } | undefined>(undefined)
@@ -63,6 +67,24 @@ export function BackupSection() {
     }
   }
 
+  async function handleLeadsSelected(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+
+    setImportError(undefined)
+    try {
+      const json = JSON.parse(await file.text()) as { app?: string; kind?: string; leads?: ImportLeadInput[] }
+      if (json.app !== 'controlead' || json.kind !== 'leads' || !Array.isArray(json.leads)) {
+        throw new Error('invalid')
+      }
+      const { created, updated } = await importLeads(json.leads)
+      showToast(`${created} leads adicionados${updated ? `, ${updated} atualizados` : ''}`)
+    } catch {
+      setImportError('Arquivo de leads inválido.')
+    }
+  }
+
   async function handleConfirmImport() {
     if (!pending) return
     setImporting(true)
@@ -95,6 +117,10 @@ export function BackupSection() {
         >
           Importar backup
         </Button>
+        <Button variant="secondary" icon={<UserPlus size={15} />} onClick={() => leadsInputRef.current?.click()}>
+          Adicionar leads
+        </Button>
+        <input ref={leadsInputRef} type="file" accept="application/json" className="hidden" onChange={handleLeadsSelected} />
         <input ref={fileInputRef} type="file" accept="application/json" className="hidden" onChange={handleFileSelected} />
       </div>
 

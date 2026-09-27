@@ -1,10 +1,12 @@
 import type {
   ContactChannel,
   EventType,
+  LeadPriority,
   LeadStatus,
   PaymentMethod,
   ProjectItemType,
   ProjectStatus,
+  ScriptKind,
   TaskStatus,
   TaskType,
 } from './constants'
@@ -41,6 +43,50 @@ export interface Lead {
   firstClosedAt?: IsoTimestamp
   /** Lead arquivado (mantido por ter histórico) mas fora das listagens padrão. */
   archivedAt?: IsoTimestamp
+  // Dados de pesquisa da prospecção (usados nas variáveis dos scripts)
+  specialty?: string
+  /** UF, ex.: "MG". */
+  state?: string
+  priority?: LeadPriority
+  googleRating?: number
+  googleReviews?: number
+  followers?: number
+  /** Gancho da abordagem: o argumento principal para este lead. */
+  hook?: string
+}
+
+// ---------------------------------------------------------------------------
+// Script (mensagens por etapa e respostas a objeções)
+// ---------------------------------------------------------------------------
+
+export interface Script {
+  id: string
+  kind: ScriptKind
+  /** Etapa do funil (só para `kind: 'stage'`). */
+  stage?: LeadStatus
+  /** Nome da mensagem, ou a objeção em si quando `kind: 'objection'`. */
+  title: string
+  /** Texto com variáveis `{nome}`, `{cidade}`… (ver `domain/scripts.ts`). */
+  body: string
+  order: number
+  createdAt: IsoTimestamp
+  updatedAt: IsoTimestamp
+}
+
+// ---------------------------------------------------------------------------
+// Competitor (concorrência local de um lead, usada como argumento)
+// ---------------------------------------------------------------------------
+
+export interface Competitor {
+  id: string
+  leadId: string
+  name: string
+  website?: string
+  /** O que o concorrente oferece no site. */
+  offers?: string
+  /** Oportunidade que isso revela para o lead. */
+  opportunity?: string
+  createdAt: IsoTimestamp
 }
 
 // ---------------------------------------------------------------------------

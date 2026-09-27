@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { migrateBackupData, UnsupportedMigrationError } from './migrations'
 import type { BackupData } from './schemas'
 
-const EMPTY_DATA: BackupData = {
+const V1_DATA = {
   leads: [],
   tasks: [],
   events: [],
@@ -11,14 +11,21 @@ const EMPTY_DATA: BackupData = {
   projectItems: [],
   payments: [],
   settings: [],
-}
+} as unknown as BackupData
 
 describe('migrateBackupData', () => {
   it('returns the data unchanged when already on the target version', () => {
-    expect(migrateBackupData(EMPTY_DATA, 1, 1)).toBe(EMPTY_DATA)
+    expect(migrateBackupData(V1_DATA, 2, 2)).toBe(V1_DATA)
+  })
+
+  it('v1 → v2 seeds the default scripts and an empty competitors table', () => {
+    const migrated = migrateBackupData(V1_DATA, 1, 2)
+    expect(migrated.competitors).toEqual([])
+    expect(migrated.scripts.some((s) => s.kind === 'stage' && s.stage === 'to_contact')).toBe(true)
+    expect(migrated.scripts.some((s) => s.kind === 'objection')).toBe(true)
   })
 
   it('throws a clear error when no migration path exists', () => {
-    expect(() => migrateBackupData(EMPTY_DATA, 1, 2)).toThrow(UnsupportedMigrationError)
+    expect(() => migrateBackupData(V1_DATA, 2, 3)).toThrow(UnsupportedMigrationError)
   })
 })

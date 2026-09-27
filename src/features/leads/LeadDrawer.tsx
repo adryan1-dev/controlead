@@ -18,6 +18,8 @@ import { Textarea } from '@/components/ui/Textarea'
 import { useToast } from '@/components/ui/Toast'
 import {
   CONTACT_CHANNEL_LABELS,
+  LEAD_PRIORITY_COLOR,
+  LEAD_PRIORITY_LABELS,
   LEAD_FINAL_STATUSES,
   LEAD_PIPELINE_ORDER,
   LEAD_STATUS_LABELS,
@@ -33,8 +35,11 @@ import { useLeadTasks } from '@/hooks/useTasks'
 import { addNote, changeStatus, logContact } from '@/services/leadService'
 import { cancelOpenTasksForLead, cancelTask, createTask, postponeTask } from '@/services/taskService'
 
+import { LeadApproach } from '../prospecting/LeadApproach'
 import { CompleteTaskDialog } from '../tasks/CompleteTaskDialog'
 import { TaskForm } from '../tasks/TaskForm'
+
+type DrawerTab = 'details' | 'approach' | 'history'
 
 interface LeadDrawerProps {
   lead: Lead
@@ -60,7 +65,7 @@ export function LeadDrawer({ lead, open, onClose, onEdit, onCloseDeal }: LeadDra
   const isClient = useIsClient(lead.id)
   const { showToast } = useToast()
 
-  const [tab, setTab] = useState<'details' | 'history'>('details')
+  const [tab, setTab] = useState<DrawerTab>('details')
   const [note, setNote] = useState('')
   const [savingNote, setSavingNote] = useState(false)
   const [taskFormOpen, setTaskFormOpen] = useState(false)
@@ -187,6 +192,8 @@ export function LeadDrawer({ lead, open, onClose, onEdit, onCloseDeal }: LeadDra
           ) : null}
         </div>
 
+        <ResearchLine lead={lead} />
+
         {lead.tags.length > 0 ? (
           <div className="flex flex-wrap gap-1">
             {lead.tags.map((tag) => (
@@ -233,10 +240,11 @@ export function LeadDrawer({ lead, open, onClose, onEdit, onCloseDeal }: LeadDra
         <Tabs
           items={[
             { value: 'details', label: 'Detalhes' },
+            { value: 'approach', label: 'Abordagem' },
             { value: 'history', label: 'Histórico' },
           ]}
           value={tab}
-          onChange={(v) => setTab(v as 'details' | 'history')}
+          onChange={(v) => setTab(v as DrawerTab)}
         />
 
         {tab === 'details' ? (
@@ -246,6 +254,8 @@ export function LeadDrawer({ lead, open, onClose, onEdit, onCloseDeal }: LeadDra
               {lead.notes || 'Nenhuma observação registrada.'}
             </p>
           </div>
+        ) : tab === 'approach' ? (
+          <LeadApproach key={lead.status} lead={lead} />
         ) : (
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
@@ -297,5 +307,33 @@ export function LeadDrawer({ lead, open, onClose, onEdit, onCloseDeal }: LeadDra
         confirmLabel="Cancelar tarefas"
       />
     </Drawer>
+  )
+}
+
+/** Dados de pesquisa da prospecção, numa linha compacta. */
+function ResearchLine({ lead }: { lead: Lead }) {
+  const items = [
+    lead.specialty,
+    lead.state,
+    lead.googleReviews !== undefined
+      ? `${lead.googleRating !== undefined ? `${lead.googleRating.toLocaleString('pt-BR', { minimumFractionDigits: 1 })}★ · ` : ''}${lead.googleReviews} avaliações`
+      : undefined,
+    lead.followers !== undefined ? `${lead.followers.toLocaleString('pt-BR')} seguidores` : undefined,
+  ].filter(Boolean)
+
+  if (!lead.priority && items.length === 0 && !lead.hook) return null
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="flex flex-wrap items-center gap-2 text-sm text-[var(--color-text-secondary)]">
+        {lead.priority ? <Badge tone={LEAD_PRIORITY_COLOR[lead.priority]}>Prioridade {LEAD_PRIORITY_LABELS[lead.priority].toLowerCase()}</Badge> : null}
+        {items.join(' · ')}
+      </div>
+      {lead.hook ? (
+        <p className="text-sm text-[var(--color-text-secondary)]">
+          Gancho: <span className="text-[var(--color-text-primary)]">{lead.hook}</span>
+        </p>
+      ) : null}
+    </div>
   )
 }
